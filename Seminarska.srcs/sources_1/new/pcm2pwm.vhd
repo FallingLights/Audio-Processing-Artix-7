@@ -2,9 +2,9 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date: 18.12.2021 09:52:24
+-- Create Date: 30.12.2021 01:52:17
 -- Design Name: 
--- Module Name: prescaler - Behavioral
+-- Module Name: pcm2pwm - Behavioral
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
@@ -31,37 +31,33 @@ use IEEE.NUMERIC_STD.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity prescaler is
-    Generic ( width : integer := 6;
-              limit : integer := 42);
+entity pcm2pwm is
+    Generic ( width : integer := 8;
+              limit : integer := 128);
     Port ( clk : in std_logic;
-           clk_new : inout std_logic;
-           event : out std_logic;
-           enable : out std_logic);
-end prescaler;
+           new_sample : in std_logic;
+           pcm : in std_logic_vector (width-1 downto 0);
+           pwm : out std_logic);
+end pcm2pwm;
 
-architecture Behavioral of prescaler is
+architecture Behavioral of pcm2pwm is
 
-signal count : unsigned (width-1 downto 0);
+signal counter : unsigned (width-1 downto 0) := (others => '0');
 
 begin
 
-process(clk)
+process (clk)
 begin
     if clk'event and clk = '1' then
-        if count = limit then
-            count <= (others => '0');
-            clk_new <= not clk_new;
-            event <= '1';
-            if clk_new = '1' then
-                enable <= '1';
-            else
-                enable <= '0';
-            end if;
+        if unsigned(pcm) > counter then
+            pwm <= '1';
         else
-            count <= count + 1;
-            event <= '0';
-            enable <= '0';
+            pwm <= '0';
+        end if;
+        if counter = limit-1 or new_sample = '1' then
+            counter <= (others => '0');
+        else
+            counter <= counter + 1;
         end if;
     end if;
 end process;
