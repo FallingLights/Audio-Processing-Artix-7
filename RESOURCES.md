@@ -13,4 +13,7 @@
 [Microphone to audio output](https://github.com/Digilent/Nexys-A7-100T-GPIO/blob/50f27b76e1bb077f531dd400889574596218c5ae/src/hdl/top.vhd)  
 [PDM to PCM(Video)](https://www.youtube.com/watch?v=5lH-tQw0tlU)  
 [FIR filter(Video)](https://www.youtube.com/watch?v=Tz9c8cNTlxs)  
-[VHDL Projects](http://web.cs.ucla.edu/classes/cs151C/#enhanced)  
+[VHDL Projects](http://web.cs.ucla.edu/classes/cs151C/#enhanced)
+[Signal Processing](https://surf-vhdl.com/category/signal-processing/)
+[Audio Echo Vhdl](https://www.fpgarelated.com/showarticle/34.php)
+[Implementing Audio effects](http://web.cs.ucla.edu/classes/cs151C/GuitarProcessor.zip)
