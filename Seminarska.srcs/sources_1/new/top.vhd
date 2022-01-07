@@ -33,9 +33,12 @@ use IEEE.STD_LOGIC_1164.ALL;
 --use UNISIM.VComponents.all;
 
 entity top is
+    Generic (
+        width_top : integer := 8);
     Port( clk : in  std_logic;
          m_clk : out std_logic; -- ura za mikrofon
          m_data : in  std_logic; -- vhod iz mikrofona
+         echo_done : in std_logic; -- prvi switch za dolocanje ali je echo ali ne
          m_lrsel : out std_logic;
          aud_pwm : out std_logic; -- audio izhod
          aud_sd : out std_logic); -- omogoci audio izhod
@@ -82,6 +85,19 @@ architecture Behavioral of top is
 
     end component;
 
+    component echo is
+        Generic (
+            width_top : integer := 8;
+            limit_top : integer := 128;
+            num_echo: integer := 5);
+        Port (
+            clk : in std_logic;
+            event_sample : in std_logic;
+            ECHO : in std_logic;
+            pcm_in : in std_logic_vector (width_top - 1 downto 0);
+            pcm_out : out std_logic_vector (width_top - 1 downto 0));
+    end component;
+
     component pcm2pwm is
         generic(
             width : integer := 8;
@@ -99,9 +115,10 @@ architecture Behavioral of top is
 
     signal clk_12khz : std_logic := '0';
     signal event_12khz : std_logic;
+    signal pcm : std_logic_vector (width_top - 1 downto 0) := (others => '0');
 
-    signal pcm : std_logic_vector (7 downto 0) := (others => '0');
-    signal pcm_dec : std_logic_vector (7 downto 0) := (others => '0');
+    signal pcm_dec : std_logic_vector (width_top - 1 downto 0) := (others => '0');
+    signal pcm_of_sum : std_logic_vector (width_top - 1 downto 0) := (others => '0');
 
     signal en_dec : std_logic;
 
@@ -141,15 +158,30 @@ begin
         port map(
             clk => clk,
             event_sample => event_12khz,
-            pcm_in => pcm,
+--            pcm_in => pcm,
+            pcm_in => pcm_of_sum,
             enable_dec => en_dec,
             pcm_out => pcm_dec);
+
+    echo_of_decimation : echo
+        generic map (
+            width_top => width_top,
+            limit_top => 128,
+            num_echo => 5)
+        port map(
+            clk => clk,
+            event_sample => event_12khz,
+            ECHO => echo_done,
+--            pcm_in => pcm_dec,
+            pcm_in => pcm,
+            pcm_out => pcm_of_sum);
 
     pcm_to_pwm : pcm2pwm
         port map(
             clk => clk,
             new_sample => event_12khz,
             enable_dec => en_dec,
+--            pcm => pcm_of_sum,
             pcm => pcm_dec,
             pwm => aud_pwm);
 
