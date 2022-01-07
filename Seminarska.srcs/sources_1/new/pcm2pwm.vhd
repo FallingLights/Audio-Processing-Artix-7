@@ -52,7 +52,7 @@ begin
     process (clk)
     begin
         if clk'event and clk = '1' then
-            if enable_dec = '1' then
+--            if enable_dec = '1' then
                 if unsigned(pcm) > counter then
                     pwm <= '1';
                 else
@@ -64,10 +64,10 @@ begin
                 else
                     counter <= counter + 1;
                 end if;
-            else
-                counter <= (others => '0');
+--            else
+--                counter <= (others => '0');
                 
-            end if;
+--            end if;
 
         end if;
     end process;

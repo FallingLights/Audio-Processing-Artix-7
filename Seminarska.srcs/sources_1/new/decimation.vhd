@@ -34,11 +34,14 @@ use IEEE.NUMERIC_STD.ALL;
 entity decimation is
     Generic (
         width_dec : integer := 4;
-        limit_dec : integer := 10);
+        limit_dec : integer := 10;
+        width_pmc : integer := 8);
     Port (
         clk : in STD_LOGIC;
         event_sample : in std_logic;
-        enable_dec : out STD_LOGIC);
+        pcm_in : in std_logic_vector (width_pmc - 1 downto 0);
+        enable_dec : out STD_LOGIC;
+        pcm_out : out std_logic_vector (width_pmc - 1 downto 0));
 end decimation;
 
 architecture Behavioral of decimation is
@@ -54,6 +57,7 @@ begin
                 if count_dec = limit_dec then
                     count_dec <= (others => '0');
                     enable_dec <= '1';
+                    pcm_out <= pcm_in;
                 else
                     count_dec <= count_dec + 1;
                     enable_dec <= '0';

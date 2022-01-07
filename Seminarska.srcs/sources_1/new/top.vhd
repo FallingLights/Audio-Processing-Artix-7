@@ -71,11 +71,15 @@ architecture Behavioral of top is
     component decimation is
         generic(
             width_dec : integer := 4;
-            limit_dec : integer := 10);
+            limit_dec : integer := 10;
+            width_pmc : integer := 8);
         port(
             clk : in STD_LOGIC;
             event_sample : in std_logic;
-            enable_dec : out STD_LOGIC);
+            pcm_in : in std_logic_vector (width_pmc - 1 downto 0);
+            enable_dec : out STD_LOGIC;
+            pcm_out : out std_logic_vector (width_pmc - 1 downto 0));
+
     end component;
 
     component pcm2pwm is
@@ -97,6 +101,7 @@ architecture Behavioral of top is
     signal event_12khz : std_logic;
 
     signal pcm : std_logic_vector (7 downto 0) := (others => '0');
+    signal pcm_dec : std_logic_vector (7 downto 0) := (others => '0');
 
     signal en_dec : std_logic;
 
@@ -131,19 +136,21 @@ begin
 
     decimation_of_pcm : decimation
         generic map (
-            width_dec => 2,
-            limit_dec => 2)
+            width_dec => 5,
+            limit_dec => 1)
         port map(
             clk => clk,
             event_sample => event_12khz,
-            enable_dec => en_dec);
+            pcm_in => pcm,
+            enable_dec => en_dec,
+            pcm_out => pcm_dec);
 
     pcm_to_pwm : pcm2pwm
         port map(
             clk => clk,
             new_sample => event_12khz,
             enable_dec => en_dec,
-            pcm => pcm,
+            pcm => pcm_dec,
             pwm => aud_pwm);
 
     m_clk <= clk_2400khz;
