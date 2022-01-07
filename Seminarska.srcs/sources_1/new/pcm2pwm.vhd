@@ -66,7 +66,7 @@ begin
                 end if;
             else
                 counter <= (others => '0');
-                pwm <= '1';
+                
             end if;
 
         end if;

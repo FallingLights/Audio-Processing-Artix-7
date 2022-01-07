@@ -131,8 +131,8 @@ begin
 
     decimation_of_pcm : decimation
         generic map (
-            width_dec => 4,
-            limit_dec => 10)
+            width_dec => 2,
+            limit_dec => 2)
         port map(
             clk => clk,
             event_sample => event_12khz,
