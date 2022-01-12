@@ -46,28 +46,25 @@ end pcm2pwm;
 architecture Behavioral of pcm2pwm is
 
     signal counter : unsigned (width-1 downto 0) := (others => '0');
+    signal limit_used : integer := limit  * 2;
 
 begin
 
     process (clk)
     begin
         if clk'event and clk = '1' then
---            if enable_dec = '1' then
                 if unsigned(pcm) > counter then
                     pwm <= '1';
                 else
                     pwm <= '0';
                 end if;
 
-                if counter = limit - 1 or new_sample = '1' then
+--                if counter = limit - 1 or new_sample = '1' then
+                if counter = limit_used - 1 or new_sample = '1' then
                     counter <= (others => '0');
                 else
                     counter <= counter + 1;
                 end if;
---            else
---                counter <= (others => '0');
-                
---            end if;
 
         end if;
     end process;

@@ -56,6 +56,7 @@ begin
             if event_sample = '1' then
                 -- ce uporabnik zeli echo ga dobi, drugace normalno predvaja
                 if echo = '1' then
+--                    sum <= unsigned(pcm_in) + unsigned(pcm_echo) - limit_in;
                     sum <= unsigned(pcm_in) + unsigned(pcm_echo);
                     pcm_sum <= std_logic_vector(sum(width_in - 1 downto 0));
                 else
