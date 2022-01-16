@@ -32,34 +32,41 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity pcm2pwm is
-    Generic ( width : integer := 8;
-              limit : integer := 128);
-    Port ( clk : in std_logic;
-           new_sample : in std_logic;
-           pcm : in std_logic_vector (width-1 downto 0);
-           pwm : out std_logic);
+    Generic (
+        width : integer := 8;
+        limit : integer := 128);
+    Port (
+        clk : in std_logic;
+        new_sample : in std_logic;
+        enable_dec : in std_logic;
+        pcm : in std_logic_vector (width-1 downto 0);
+        pwm : out std_logic);
 end pcm2pwm;
 
 architecture Behavioral of pcm2pwm is
 
-signal counter : unsigned (width-1 downto 0) := (others => '0');
+    signal counter : unsigned (width-1 downto 0) := (others => '0');
+    signal limit_used : integer := limit  * 2;
 
 begin
 
-process (clk)
-begin
-    if clk'event and clk = '1' then
-        if unsigned(pcm) > counter then
-            pwm <= '1';
-        else
-            pwm <= '0';
+    process (clk)
+    begin
+        if clk'event and clk = '1' then
+                if unsigned(pcm) > counter then
+                    pwm <= '1';
+                else
+                    pwm <= '0';
+                end if;
+
+--                if counter = limit - 1 or new_sample = '1' then
+                if counter = limit_used - 1 or new_sample = '1' then
+                    counter <= (others => '0');
+                else
+                    counter <= counter + 1;
+                end if;
+
         end if;
-        if counter = limit-1 or new_sample = '1' then
-            counter <= (others => '0');
-        else
-            counter <= counter + 1;
-        end if;
-    end if;
-end process;
+    end process;
 
 end Behavioral;
