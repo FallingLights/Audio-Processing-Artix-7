@@ -38,6 +38,7 @@ entity echo_process_data is
     Port (
         clk : in std_logic;
         new_sample : in std_logic;
+        en_sample : in std_logic;
         pcm_in : in std_logic_vector (width-1 downto 0);
         pcm_echo : out std_logic_vector (width-1 downto 0));
 end echo_process_data;
@@ -57,7 +58,9 @@ begin
                 ix <= count * width;
                 -- preden ga prepisemo, ga zapisemo v pcm_echo
                 pcm_echo <= buff(ix+width-1 downto ix);
-                buff(ix+width-1 downto ix) <= pcm_in;
+                if en_sample = '0' then
+                    buff(ix+width-1 downto ix) <= pcm_in;
+                end if;
                 if count = num_echo-1 then
                     count <= 0;
                 else

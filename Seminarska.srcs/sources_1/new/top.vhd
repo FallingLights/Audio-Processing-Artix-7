@@ -40,8 +40,7 @@ entity top is
         clk : in  std_logic;
         m_clk : out std_logic; -- ura za mikrofon
         m_data : in  std_logic; -- vhod iz mikrofona
-        echo_enable : in std_logic; -- prvi switch za dolocanje ali je echo ali ne
-        sw : in std_logic; -- drugi switch; ce je vklopljen prihaja zvok direkt iz mikrofona
+        SW : in std_logic_vector (15 downto 0); -- prvi switch za dolocanje ali je echo ali ne, tretji switch; ce je vklopljen prihaja zvok direkt iz mikrofona
         m_lrsel : out std_logic;
         aud_pwm : out std_logic; -- audio izhod
         aud_sd : out std_logic); -- omogoci audio izhod
@@ -102,7 +101,7 @@ architecture Behavioral of top is
         port(
             clk : in std_logic;
             new_sample : in std_logic;
-            echo_enable : in std_logic;
+            enable : in std_logic_vector (13 downto 0);
             pcm_in : in std_logic_vector (width_top-1 downto 0);
             pcm_out : out std_logic_vector (width_top-1 downto 0));
     end component;
@@ -183,7 +182,7 @@ begin
     decimation_of_pcm : decimation
         generic map (
             width_pcm => width_top,
-            limit_dec => 7)
+            limit_dec => 5)
         port map(
             clk => clk,
             new_sample => event_12khz,
@@ -193,11 +192,11 @@ begin
     echo_effect : echo
         generic map (
             width_top => width_top,
-            num_echo_top => 50)
+            num_echo_top => 1500 )
         port map(
             clk => clk,
             new_sample => event_12khz,
-            echo_enable => echo_enable,
+            enable => SW(13 downto 0),
             pcm_in => pcm_decimated,
             pcm_out => pcm_echoed);
 
@@ -217,7 +216,7 @@ begin
     
     process(clk)
     begin
-        if sw = '1' then
+        if SW(15) = '1' then
             aud_pwm <= m_data;
         else
             aud_pwm <= pwm;
