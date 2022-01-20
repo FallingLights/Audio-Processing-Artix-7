@@ -33,7 +33,7 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity pdm2pcm is
     Generic (
-        width : integer := 8;
+        width : integer := 7;
         limit : integer := 128);
     Port (
         clk : in std_logic;
@@ -74,7 +74,7 @@ begin
             end if;
             if m_enable = '1' then
                 if count1 = '1' then
-                    if depth1 < limit then
+                    if depth1 < limit-1 then
                         depth1 <= depth1 + 1;
                         if m_data = '1' then
                             ones1 <= ones1 + 1;
@@ -82,7 +82,7 @@ begin
                     end if;
                 end if;
                 if count2 = '1' then
-                    if depth2 < limit then
+                    if depth2 < limit-1 then
                         depth2 <= depth2 + 1;
                         if m_data = '1' then
                             ones2 <= ones2 + 1;

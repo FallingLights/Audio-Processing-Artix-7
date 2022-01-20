@@ -33,32 +33,30 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity addition_of_pcms is
     Generic (
-        width_in : integer := 8;
-        limit_in : integer := 128);
+        width : integer := 7);
     Port (
         clk : in std_logic;
-        event_sample : in std_logic;
-        echo : in std_logic;
-        pcm_in : in std_logic_vector (width_in - 1 downto 0);
-        pcm_echo : in std_logic_vector (width_in - 1 downto 0);
-        pcm_sum : out std_logic_vector (width_in - 1 downto 0));
+        new_sample : in std_logic;
+        enable : in std_logic;
+        pcm_in : in std_logic_vector (width-1 downto 0);
+        pcm_echo : in std_logic_vector (width-1 downto 0);
+        pcm_sum : out std_logic_vector (width-1 downto 0));
 end addition_of_pcms;
 
 architecture Behavioral of addition_of_pcms is
 
-    signal sum : unsigned (width_in - 1 downto 0) := (others => '0');
+    signal sum : unsigned (width-1 downto 0) := (others => '0');
 
 begin
 
     process(clk)
     begin
         if clk'event and clk = '1' then
-            if event_sample = '1' then
+            if new_sample = '1' then
                 -- ce uporabnik zeli echo ga dobi, drugace normalno predvaja
-                if echo = '1' then
---                    sum <= unsigned(pcm_in) + unsigned(pcm_echo) - limit_in;
-                    sum <= unsigned(pcm_in) + unsigned(pcm_echo);
-                    pcm_sum <= std_logic_vector(sum(width_in - 1 downto 0));
+                if enable = '1' then
+                    sum <= unsigned(pcm_in) + (shift_right(unsigned(pcm_echo), 4));
+                    pcm_sum <= std_logic_vector(sum);
                 else
                     pcm_sum <= pcm_in;
                 end if;

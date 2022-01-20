@@ -2,9 +2,9 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date: 07.01.2022 22:19:29
+-- Create Date: 19.01.2022 23:48:43
 -- Design Name: 
--- Module Name: echo_process_data - Behavioral
+-- Module Name: boxcar_filter - Behavioral
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
@@ -31,22 +31,23 @@ use IEEE.NUMERIC_STD.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity echo_process_data is
+entity boxcar_filter is
     Generic (
         width : integer := 7;
-        num_echo: integer := 5);
+        window : integer := 7);
     Port (
         clk : in std_logic;
         new_sample : in std_logic;
         pcm_in : in std_logic_vector (width-1 downto 0);
-        pcm_echo : out std_logic_vector (width-1 downto 0));
-end echo_process_data;
+        pcm_out : out std_logic_vector (width-1 downto 0));
+end boxcar_filter;
 
-architecture Behavioral of echo_process_data is
+architecture Behavioral of boxcar_filter is
 
-    signal count : integer range 0 to num_echo := 0;
-    signal ix : integer range 0 to num_echo*width := 0;
-    signal buff : std_logic_vector (num_echo*width-1 downto 0) := (others => '0');
+    signal pcm_prev : unsigned (width-1 downto 0) := (others => '0');
+    signal buff : std_logic_vector (window*width-1 downto 0) := (others => '0');
+    signal last : std_logic_vector (width-1 downto 0);
+    signal y : unsigned (width-1 downto 0);
 
 begin
 
@@ -54,15 +55,12 @@ begin
     begin
         if clk'event and clk = '1' then
             if new_sample = '1' then
-                ix <= count * width;
-                -- preden ga prepisemo, ga zapisemo v pcm_echo
-                pcm_echo <= buff(ix+width-1 downto ix);
-                buff(ix+width-1 downto ix) <= pcm_in;
-                if count = num_echo-1 then
-                    count <= 0;
-                else
-                    count <= count + 1;
-                end if;
+                last <= buff(window*width-1 downto window*width-width); -- x_n-N
+                y <= unsigned(pcm_in) + pcm_prev - unsigned(last);
+                pcm_prev <= y;
+                pcm_out <= std_logic_vector(y);
+                -- shiftamo za width v levo in desno zapisemo nov pcm_in
+                buff <= buff(window*width-1-width downto 0) & pcm_in;
             end if;
         end if;
     end process;
