@@ -2,9 +2,9 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date: 30.12.2021 01:52:17
+-- Create Date: 07.01.2022 23:40:22
 -- Design Name: 
--- Module Name: pcm2pwm - Behavioral
+-- Module Name: addition_of_pcms - Behavioral
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
@@ -31,36 +31,36 @@ use IEEE.NUMERIC_STD.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity pcm2pwm is
+entity addition_of_pcms is
     Generic (
-        width : integer := 7;
-        limit : integer := 128);
+        width : integer := 7);
     Port (
         clk : in std_logic;
         new_sample : in std_logic;
-        pcm : in std_logic_vector (width-1 downto 0);
-        pwm : out std_logic);
-end pcm2pwm;
+        enable : in std_logic;
+        pcm_in : in std_logic_vector (width-1 downto 0);
+        pcm_echo : in std_logic_vector (width-1 downto 0);
+        pcm_sum : out std_logic_vector (width-1 downto 0));
+end addition_of_pcms;
 
-architecture Behavioral of pcm2pwm is
+architecture Behavioral of addition_of_pcms is
 
-    signal count : unsigned (width-1 downto 0) := (others => '0');
+    signal sum : unsigned (width-1 downto 0) := (others => '0');
 
 begin
 
-    process (clk)
+    process(clk)
     begin
         if clk'event and clk = '1' then
-                if unsigned(pcm) > count then
-                    pwm <= '1';
+            if new_sample = '1' then
+                -- ce uporabnik zeli echo ga dobi, drugace normalno predvaja
+                if enable = '1' then
+                    sum <= unsigned(pcm_in) + (shift_right(unsigned(pcm_echo), 4));
+                    pcm_sum <= std_logic_vector(sum);
                 else
-                    pwm <= '0';
+                    pcm_sum <= pcm_in;
                 end if;
-                if count = limit-1 or new_sample = '1' then
-                    count <= (others => '0');
-                else
-                    count <= count + 1;
-                end if;
+            end if;
         end if;
     end process;
 

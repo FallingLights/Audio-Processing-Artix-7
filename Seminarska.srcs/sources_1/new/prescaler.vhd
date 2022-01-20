@@ -32,38 +32,39 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity prescaler is
-    Generic ( width : integer := 6;
-              limit : integer := 42);
-    Port ( clk : in std_logic;
-           clk_new : inout std_logic;
-           event : out std_logic;
-           enable : out std_logic);
+    Generic (
+        freq : integer := 2400);
+    Port (
+        clk : in std_logic;
+        clk_new : inout std_logic;
+        clk_event : out std_logic;
+        clk_rising_edge : out std_logic);
 end prescaler;
 
 architecture Behavioral of prescaler is
 
-signal count : unsigned (width-1 downto 0);
+    signal count : integer range 0 to 5000 := 0;
 
 begin
 
-process(clk)
-begin
-    if clk'event and clk = '1' then
-        if count = limit then
-            count <= (others => '0');
-            clk_new <= not clk_new;
-            event <= '1';
-            if clk_new = '1' then
-                enable <= '1';
+    process(clk)
+    begin
+        if clk'event and clk = '1' then
+            if count = (((100*1000)/(freq*2))-1) then
+                count <= 0;
+                clk_new <= not clk_new;
+                clk_event <= '1';
+                if clk_new = '1' then
+                    clk_rising_edge <= '1';
+                else
+                    clk_rising_edge <= '0';
+                end if;
             else
-                enable <= '0';
+                count <= count + 1;
+                clk_event <= '0';
+                clk_rising_edge <= '0';
             end if;
-        else
-            count <= count + 1;
-            event <= '0';
-            enable <= '0';
         end if;
-    end if;
-end process;
+    end process;
 
 end Behavioral;

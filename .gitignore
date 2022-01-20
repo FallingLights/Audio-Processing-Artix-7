@@ -3,3 +3,9 @@ Seminarska.hw
 Seminarska.ip_user_files
 Seminarska.runs
 Seminarska.sim
+
+*.jou
+*.log
+*.backup.jou
+*.backup.log
+*.str

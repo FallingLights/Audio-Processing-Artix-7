@@ -2,9 +2,9 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date: 30.12.2021 01:52:17
+-- Create Date: 07.01.2022 15:45:21
 -- Design Name: 
--- Module Name: pcm2pwm - Behavioral
+-- Module Name: decimation - Behavioral
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
@@ -31,36 +31,34 @@ use IEEE.NUMERIC_STD.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity pcm2pwm is
+entity decimation is
     Generic (
-        width : integer := 7;
-        limit : integer := 128);
+        width_pcm : integer := 7;
+        limit_dec : integer := 10);
     Port (
         clk : in std_logic;
         new_sample : in std_logic;
-        pcm : in std_logic_vector (width-1 downto 0);
-        pwm : out std_logic);
-end pcm2pwm;
+        pcm_in : in std_logic_vector (width_pcm-1 downto 0);
+        pcm_out : out std_logic_vector (width_pcm-1 downto 0));
+end decimation;
 
-architecture Behavioral of pcm2pwm is
+architecture Behavioral of decimation is
 
-    signal count : unsigned (width-1 downto 0) := (others => '0');
+    signal count : integer range 0 to limit_dec := 0;
 
 begin
 
     process (clk)
     begin
         if clk'event and clk = '1' then
-                if unsigned(pcm) > count then
-                    pwm <= '1';
-                else
-                    pwm <= '0';
-                end if;
-                if count = limit-1 or new_sample = '1' then
-                    count <= (others => '0');
+            if new_sample = '1' then
+                if count = limit_dec-1 then
+                    count <= 0;
+                    pcm_out <= pcm_in;
                 else
                     count <= count + 1;
                 end if;
+            end if;
         end if;
     end process;
 
