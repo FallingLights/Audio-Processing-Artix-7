@@ -44,17 +44,18 @@ end echo_process_data;
 
 architecture Behavioral of echo_process_data is
 
-    component bram_wrapper is
+    component frame_bram is
         port (
-            BRAM_PORTA_0_addr : in STD_LOGIC_VECTOR ( 31 downto 0 );
-            BRAM_PORTA_0_clk : in STD_LOGIC;
-            BRAM_PORTA_0_din : in STD_LOGIC_VECTOR ( 31 downto 0 );
-            BRAM_PORTA_0_dout : out STD_LOGIC_VECTOR ( 31 downto 0 );
-            BRAM_PORTA_0_en : in STD_LOGIC;
-            BRAM_PORTA_0_rst : in STD_LOGIC;
-            BRAM_PORTA_0_we : in STD_LOGIC_VECTOR ( 3 downto 0 )
+            clka : IN STD_LOGIC;
+            wea : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+            addra : IN STD_LOGIC_VECTOR(17 DOWNTO 0);
+            dina : IN STD_LOGIC_VECTOR(17 DOWNTO 0);
+            clkb : IN STD_LOGIC;
+            enb : IN STD_LOGIC;
+            addrb : IN STD_LOGIC_VECTOR(17 DOWNTO 0);
+            doutb : OUT STD_LOGIC_VECTOR(17 DOWNTO 0)
         );
-    end component;
+    END component;
 
     signal count : integer range 0 to num_echo := 0;
     signal ix : integer range 0 to num_echo*width := 0;
@@ -66,7 +67,7 @@ architecture Behavioral of echo_process_data is
     signal count_temp : unsigned  (31 downto 0) := (others => '0');
 
     signal bram_enable : std_logic := '0';
-    signal bram_wet : std_logic_vector(3 downto 0) := (others => '0');
+    signal bram_wet : std_logic_vector(1 downto 0) := (others => '0');
 
 begin
     process(clk)
@@ -75,15 +76,15 @@ begin
         if clk'event and clk = '1' then
             if enable(14)= '1' then
                 count_temp <= (others => '0');
-                bram_wet <= "0000";
+                bram_wet <= "00";
                 bram_enable <= '0';
-                
+
             elsif new_sample = '1' then
                 bram_enable <= '1';
                 if enable(13) = '1' then
-                    bram_wet <= "0000";
+                    bram_wet <= "00";
                 else
-                    bram_wet <= "1111";
+                    bram_wet <= "11";
 
                     pcm_in_temp <= (others => '0');
                     pcm_in_temp <= pcm_in_temp + unsigned (pcm_in);
@@ -95,29 +96,30 @@ begin
                 end if;
             else
                 bram_enable <= '0';
-                bram_wet <= "0000";
+                bram_wet <= "00";
             end if;
         end if;
     end process;
-    
--- READ FIRST more biti
-    get_pcm_into_ram : bram_wrapper
-        port map(
-            BRAM_PORTA_0_addr => std_logic_vector (count_temp),
-            BRAM_PORTA_0_clk => clk,
-            BRAM_PORTA_0_din => std_logic_vector(pcm_in_temp),
-            BRAM_PORTA_0_dout => pcm_temp,
-            BRAM_PORTA_0_en => bram_enable,
-            BRAM_PORTA_0_rst => enable(14),
-            BRAM_PORTA_0_we => bram_wet
-        );
 
+    -- READ FIRST more biti
+    
+    get_pcm_into_ram : frame_bram
+        port map(
+            clka => clk,
+            wea => bram_wet,
+            addra => std_logic_vector (count_temp),
+            dina => pcm_in,
+            clkb => clk,
+            enb => bram_enable,
+            addrb => std_logic_vector (count_temp),
+            doutb => pcm_temp
+        );
     process(clk)
     begin
         if clk'event and clk = '1' then
             if enable(14) = '1' then
                 pcm_echo <= (others => '0');
-                
+
             elsif new_sample = '1' then
                 pcm_echo <= pcm_temp(width-1 downto 0);
             end if;
