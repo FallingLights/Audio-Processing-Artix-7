@@ -34,8 +34,8 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity top is
     Generic (
-        width_top : integer := 7;
-        limit_top : integer := 128);
+        width_top : integer := 18;
+        limit_top : integer := 262143);
     Port ( 
         clk : in  std_logic;
         m_clk : out std_logic; -- ura za mikrofon
@@ -101,7 +101,7 @@ architecture Behavioral of top is
         port(
             clk : in std_logic;
             new_sample : in std_logic;
-            enable : in std_logic_vector (13 downto 0);
+            enable : in std_logic_vector (14 downto 0);
             pcm_in : in std_logic_vector (width_top-1 downto 0);
             pcm_out : out std_logic_vector (width_top-1 downto 0));
     end component;
@@ -189,14 +189,15 @@ begin
             pcm_in => pcm_filtered,
             pcm_out => pcm_decimated);
 
+-- max num_echo_top => 150000
     echo_effect : echo
         generic map (
             width_top => width_top,
-            num_echo_top => 1500 )
+            num_echo_top => 100000)
         port map(
             clk => clk,
             new_sample => event_12khz,
-            enable => SW(13 downto 0),
+            enable => SW(14 downto 0),
             pcm_in => pcm_decimated,
             pcm_out => pcm_echoed);
 

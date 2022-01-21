@@ -37,7 +37,7 @@ entity addition_of_pcms is
     Port (
         clk : in std_logic;
         new_sample : in std_logic;
-        sample_enable : in std_logic_vector (13 downto 0);
+        sample_enable : in std_logic_vector (14 downto 0);
         pcm_in : in std_logic_vector (width-1 downto 0);
         pcm_echo : in std_logic_vector (width-1 downto 0);
         pcm_sum : out std_logic_vector (width-1 downto 0));

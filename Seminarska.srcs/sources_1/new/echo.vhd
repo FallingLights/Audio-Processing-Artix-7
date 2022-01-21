@@ -38,7 +38,7 @@ entity echo is
     Port (
         clk : in std_logic;
         new_sample : in std_logic;
-        enable : in std_logic_vector (13 downto 0);
+        enable : in std_logic_vector (14 downto 0);
         pcm_in : in std_logic_vector (width_top-1 downto 0);
         pcm_out : out std_logic_vector (width_top-1 downto 0));
 end echo;
@@ -52,10 +52,12 @@ architecture Behavioral of echo is
         port(
             clk : in std_logic;
             new_sample : in std_logic;
-            en_sample : in std_logic;
+            enable : in std_logic_vector (14 downto 0);
             pcm_in : in std_logic_vector (width-1 downto 0);
             pcm_echo : out std_logic_vector (width-1 downto 0));
     end component;
+
+
 
     component addition_of_pcms is
         generic(
@@ -63,7 +65,7 @@ architecture Behavioral of echo is
         port(
             clk : in std_logic;
             new_sample : in std_logic;
-            sample_enable : in std_logic_vector (13 downto 0);
+            sample_enable : in std_logic_vector (14 downto 0);
             pcm_in : in std_logic_vector (width-1 downto 0);
             pcm_echo : in std_logic_vector (width-1 downto 0);
             pcm_sum : out std_logic_vector (width-1 downto 0));
@@ -82,7 +84,7 @@ begin
         port map(
             clk => clk,
             new_sample => new_sample,
-            en_sample => enable(13),
+            enable => enable,
             pcm_in => pcm_in,
             pcm_echo => pcm_of_echo);
 
