@@ -79,8 +79,8 @@ begin
                     bram_wet <= "00";
                 else
                     bram_wet <= "11";
-
                 end if;
+                
                 if count_temp = num_echo-1 then
                     count_temp <= (others => '0');
                 else
@@ -94,7 +94,6 @@ begin
     end process;
 
     -- READ FIRST more biti
-    
     get_pcm_into_ram : frame_bram
         port map(
             clka => clk,
@@ -111,7 +110,6 @@ begin
         if clk'event and clk = '1' then
             if enable(14) = '1' then
                 pcm_echo <= (others => '0');
-
             elsif new_sample = '1' then
                 pcm_echo <= pcm_temp;
             end if;
