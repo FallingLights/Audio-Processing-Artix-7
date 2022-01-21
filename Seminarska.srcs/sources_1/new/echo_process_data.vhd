@@ -57,14 +57,8 @@ architecture Behavioral of echo_process_data is
         );
     END component;
 
-    signal count : integer range 0 to num_echo := 0;
-    signal ix : integer range 0 to num_echo*width := 0;
-    signal buff : std_logic_vector (num_echo*width-1 downto 0) := (others => '0');
-
-
-    signal pcm_temp : std_logic_vector (31 downto 0) := (others => '0');
-    signal pcm_in_temp : unsigned (31 downto 0) := (others => '0');
-    signal count_temp : unsigned  (31 downto 0) := (others => '0');
+    signal pcm_temp : std_logic_vector (width-1 downto 0) := (others => '0');
+    signal count_temp : unsigned  (17 downto 0) := (others => '0');
 
     signal bram_enable : std_logic := '0';
     signal bram_wet : std_logic_vector(1 downto 0) := (others => '0');
@@ -86,8 +80,6 @@ begin
                 else
                     bram_wet <= "11";
 
-                    pcm_in_temp <= (others => '0');
-                    pcm_in_temp <= pcm_in_temp + unsigned (pcm_in);
                 end if;
                 if count_temp = num_echo-1 then
                     count_temp <= (others => '0');
@@ -121,7 +113,7 @@ begin
                 pcm_echo <= (others => '0');
 
             elsif new_sample = '1' then
-                pcm_echo <= pcm_temp(width-1 downto 0);
+                pcm_echo <= pcm_temp;
             end if;
         end if;
     end process;
