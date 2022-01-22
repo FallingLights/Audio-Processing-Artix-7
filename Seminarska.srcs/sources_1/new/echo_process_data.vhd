@@ -71,7 +71,7 @@ begin
     process(clk)
     begin
 
-        if (rising_edge(clk)) then
+        if (clk'event and clk = '1') then
             if rst = '1' then --reset event
                 count_temp <= (others => '0');
                 bram_wet <= "00";
@@ -111,7 +111,7 @@ begin
         );
     process(clk)
     begin
-        if (rising_edge(clk)) then
+        if (clk'event and clk = '1') then
             if rst = '1' then -- reset event
                 pcm_echo <= (others => '0');
             elsif new_sample = '1' then -- Normalno delovanje

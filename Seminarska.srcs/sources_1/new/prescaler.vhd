@@ -52,9 +52,8 @@ begin
 
     process(clk)
     begin
-        if (rising_edge(clk)) then
+        if clk'event and clk = '1' then
             if rst = '1' then -- reset event
-                clk_rising_edge <= '0';
                 count <= 0;
             else -- normalno delovanje
                 if count = (((100*1000)/(freq*2))-1) then

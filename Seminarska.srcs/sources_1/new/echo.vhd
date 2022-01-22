@@ -40,10 +40,10 @@ entity echo is
         rst : in std_logic;
         
         new_sample : in std_logic;
-        SW : in std_logic_vector (13 downto 0);
+        SW : in std_logic_vector (12 downto 1);
         pcm_in : in std_logic_vector (width_top-1 downto 0);
         
-        LED : out std_logic_vector (13 downto 0);
+        LED : out std_logic_vector (12 downto 1);
         pcm_out : out std_logic_vector (width_top-1 downto 0));
 end echo;
 
@@ -61,12 +61,12 @@ begin
     
     process (clk)
     begin
-    if (rising_edge(clk)) then
-      if SW(13) = '1' then --Piše v BRAM
-        LED(13) <= '1';
+    if (clk'event and clk = '1') then
+      if SW(12) = '1' then --Piše v BRAM
+        LED(12) <= '1';
         echo_process_data_enable <= '0';
       else -- ne piše v bram
-        LED(13) <= '0';
+        LED(12) <= '0';
         echo_process_data_enable <= '1';
       end if;
     end if;
@@ -88,13 +88,13 @@ begin
     
     process (clk)
     begin
-    if (rising_edge(clk)) then
-      if SW(11) = '1' then --echo
-        LED(11) <= '1';
+    if (clk'event and clk = '1') then
+      if SW(10) = '1' then --echo
+        LED(10) <= '1';
         pcm_in_addition <= pcm_in;
         pcm_echo_addition <= pcm_of_echo;
       else -- inverse echo
-        LED(11) <= '0';
+        LED(10) <= '0';
         pcm_in_addition <= pcm_of_echo;
         pcm_echo_addition <= pcm_in;
       end if;
@@ -117,12 +117,12 @@ begin
        
        process (clk) 
         begin
-        if (rising_edge(clk)) then
-          if SW(12) = '1' then -- Echo ali brez echota
-            LED(12) <= '1';
+        if (clk'event and clk = '1') then
+          if SW(11) = '1' then -- Echo ali brez echota
+            LED(11) <= '1';
             pcm_out_final <= pcm_of_sum;
           else
-            LED(12) <= '0';
+            LED(11) <= '0';
             pcm_out_final <= pcm_of_echo;
           end if;
         end if;

@@ -53,7 +53,7 @@ begin
 
     process(clk)
     begin
-        if (rising_edge(clk)) then
+        if (clk'event and clk = '1') then
             if rst = '1' then --reset event
                 sum <= (others => '0');
                 pcm_out <= (others => '0');

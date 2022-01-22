@@ -53,7 +53,7 @@ begin
 
     process(clk)
     begin
-        if (rising_edge(clk)) then
+        if (clk'event and clk = '1') then
             if new_sample = '1' then
                 last <= buff(window*width-1 downto window*width-width); -- x_n-N
                 y <= unsigned(pcm_in) + pcm_prev - unsigned(last);

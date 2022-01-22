@@ -61,7 +61,7 @@ begin
 
     process (clk)
     begin
-        if (rising_edge(clk)) then
+        if (clk'event and clk = '1') then
             if rst = '1' then -- reset event
                 pcm <= (others => '0');
                 count1 <= '0';
@@ -105,7 +105,7 @@ begin
                 end if; -- event_sample = '1'
                 
             end if; -- rst = '1'
-        end if; -- (rising_edge(clk))
+        end if; -- (clk'event and clk = '1')
     end process;
 
 end Behavioral;

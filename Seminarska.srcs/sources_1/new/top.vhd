@@ -17,10 +17,10 @@
 -- Additional Comments:
 -- 0 -> ON = Reset?      8 ->
 -- 1 ->                  9 ->
--- 2 ->                  10 ->
--- 3 ->                  11 -> ON = ECHO | OFF = Inverse ECHO
--- 4 ->                  12 -> ON = ECHO_ADDITION | OFF = samo BRAM
--- 5 ->                  13 -> ON = Shranuje v BRAM
+-- 2 ->                  10 ->  ON = ECHO | OFF = Inverse ECHO
+-- 3 ->                  11 -> ON = ECHO_ADDITION | OFF = samo BRAM
+-- 4 ->                  12 -> ON = Shranuje v BRAM
+-- 5 ->                  13 -> ON = MEDIAN FILTER | OFF = BOXCAR FILTER
 -- 6 ->                  14 -> ON = ECHO MODULE | OFF = BYPASS ECHO
 -- 7 ->                  15 -> ON = OBDELOVANJE SIGNALA | OFF = DIREKTNO IZ MIC
 ----------------------------------------------------------------------------------
@@ -75,19 +75,23 @@ architecture Behavioral of top is
     signal pcm_echoed : std_logic_vector (width_top-1 downto 0) := (others => '0');
     signal pwm : std_logic;
     signal pcm_in_pcm2pwm : std_logic_vector (width_top-1 downto 0) := (others => '0');
-    
-    signal rst : std_logic;
+    signal pcm_filtered_median : std_logic_vector (width_top-1 downto 0) := (others => '0');
+    signal pcm_filtered_boxcar: std_logic_vector (width_top-1 downto 0) := (others => '0');
+    signal rst : std_logic := '0';
+    signal audioOut : std_logic := '0';
 
 begin
-    --rst <= CPU_RESETN;
-    
+    rst <= SW(0);
     process(clk)
     begin
-        if rising_edge(clk) then
-          rst <= CPU_RESETN;
+        if clk'event and clk = '1' then
+            if rst = '1' then
+                LED(0) <= '1';
+            else
+                LED(0) <= '0';
+            end if;
         end if;
     end process;
-    
     microphone_clock : entity work.prescaler
         port map(
             clk => clk,
@@ -126,7 +130,30 @@ begin
             rst => rst,
             new_sample => event_12khz,
             pcm_in => pcm,
-            pcm_out => pcm_filtered);
+            pcm_out => pcm_filtered_median);
+    
+    filterBoxcar : entity work.boxcar_filter
+        generic map(
+            width => width_top,
+            window => 3)
+        port map(
+            clk => clk,
+            new_sample => event_12khz,
+            pcm_in => pcm,
+            pcm_out => pcm_filtered_boxcar);
+     
+    process(clk)
+    begin
+    if clk'event and clk = '1' then
+         if SW(13) = '1' then
+              LED(13) <= '1';
+              pcm_filtered <= pcm_filtered_median;
+         else
+              LED(13) <= '0';
+              pcm_filtered <= pcm_filtered_boxcar;
+         end if;
+    end if;
+    end process;
             
     decimation_of_pcm : entity work.decimation
         generic map (
@@ -148,14 +175,14 @@ begin
             clk => clk,
             rst => rst,
             new_sample => event_12khz,
-            SW => SW(13 downto 0),
-            LED => LED(13 downto 0),
+            SW => SW(12 downto 1),
+            LED => LED(12 downto 1),
             pcm_in => pcm_filtered,
             pcm_out => pcm_echoed);
     
     process(clk)
     begin
-        if rising_edge(clk) then
+        if clk'event and clk = '1' then
             if SW(14) = '1' then
                 LED(14) <= '1';
                 pcm_in_pcm2pwm <= pcm_echoed;
@@ -179,14 +206,15 @@ begin
     
     process(clk)
     begin
-    if rising_edge(clk) then
-        if SW(15) = '1' then
-            LED(15) <= '1';
-            aud_pwm <= pwm;
-        else
-            LED(15) <= '0';
-            aud_pwm <= m_data;
-        end if;
+    if clk'event and clk = '1' then
+         if SW(15) = '1' then
+              LED(15) <= '1';
+              audioOut <= pwm;
+         else
+              LED(15) <= '0';
+              audioOut <= m_data;
+         end if;
+         aud_pwm <= audioOut;
     end if;
     end process;
     
