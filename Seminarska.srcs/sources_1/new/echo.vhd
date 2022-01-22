@@ -104,7 +104,7 @@ begin
        process (clk) 
         begin
         if (rising_edge(clk)) then
-          if SW(12) = '1' then
+          if SW(12) = '1' then -- Echo ali brez echota
             LED(12) <= '1';
             pcm_out_final <= pcm_of_sum;
           else

@@ -53,11 +53,7 @@ entity top is
         
         -- I/O
         SW : in std_logic_vector (15 downto 0);
-<<<<<<< HEAD
-        LED : out std_logic_vector (15 downto 0) := (others => '0');
-=======
         LED : out std_logic_vector (15 downto 0);
->>>>>>> 81eeb698589c35e8ccb776cf06506773f74b32ea
         
         --Audio Out
         m_lrsel : out std_logic;
@@ -83,7 +79,6 @@ architecture Behavioral of top is
     signal rst : std_logic;
 
 begin
-<<<<<<< HEAD
     --rst <= CPU_RESETN;
     
     process(clk)
@@ -92,9 +87,6 @@ begin
           rst <= CPU_RESETN;
         end if;
     end process;
-=======
-    rst <= CPU_RESETN;
->>>>>>> 81eeb698589c35e8ccb776cf06506773f74b32ea
     
     microphone_clock : entity work.prescaler
         port map(
