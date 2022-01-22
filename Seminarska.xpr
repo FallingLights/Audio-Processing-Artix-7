@@ -3,7 +3,7 @@
 <!--                                                         -->
 <!-- Copyright 1986-2021 Xilinx, Inc. All Rights Reserved.   -->
 
-<Project Version="7" Minor="55" Path="C:/Users/vidma/boxcar_filter/obdelava-zvoka/Seminarska.xpr">
+<Project Version="7" Minor="55" Path="C:/Users/FallingLights/OneDrive - Univerza v Ljubljani/Docs/Vivado/obdelava-zvoka/Seminarska.xpr">
   <DefaultLaunch Dir="$PRUNDIR"/>
   <Configuration>
     <Option Name="Id" Val="04c18f96b91140d9929dc8af31a78847"/>
@@ -146,6 +146,13 @@
         </FileInfo>
       </File>
       <File Path="$PSRCDIR/sources_1/new/delay.vhd">
+        <FileInfo>
+          <Attr Name="AutoDisabled" Val="1"/>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PSRCDIR/sources_1/new/boxcar_filter.vhd">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
