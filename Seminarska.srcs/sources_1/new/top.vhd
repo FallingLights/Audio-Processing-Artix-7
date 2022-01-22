@@ -170,7 +170,7 @@ begin
     echo_effect : entity work.echo
         generic map (
             width_top => width_top,
-            num_echo_top => 150000)
+            num_echo_top => 12500) -- 25000 bi bilo 1s delay
         port map(
             clk => clk,
             rst => rst,
