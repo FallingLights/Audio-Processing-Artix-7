@@ -37,8 +37,11 @@ entity decimation is
         limit_dec : integer := 10);
     Port (
         clk : in std_logic;
+        rst : in std_logic;
+        
         new_sample : in std_logic;
         pcm_in : in std_logic_vector (width_pcm-1 downto 0);
+        
         pcm_out : out std_logic_vector (width_pcm-1 downto 0));
 end decimation;
 
@@ -50,8 +53,11 @@ begin
 
     process (clk)
     begin
-        if clk'event and clk = '1' then
-            if new_sample = '1' then
+        if (rising_edge(clk)) then
+            if rst = '1' then
+                pcm_out <= (others => '0');
+                count <= 0;
+            elsif new_sample = '1' then
                 if count = limit_dec-1 then
                     count <= 0;
                     pcm_out <= pcm_in;
