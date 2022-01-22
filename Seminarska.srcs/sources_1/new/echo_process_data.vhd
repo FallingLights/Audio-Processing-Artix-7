@@ -37,11 +37,11 @@ entity echo_process_data is
     Port (
         clk : in std_logic;
         rst : in std_logic;
-        
+
         new_sample : in std_logic;
         enable : in std_logic;
         pcm_in : in std_logic_vector (width-1 downto 0);
-        
+
         pcm_echo : out std_logic_vector (width-1 downto 0));
 end echo_process_data;
 
@@ -56,7 +56,7 @@ architecture Behavioral of echo_process_data is
             clkb : IN STD_LOGIC;
             enb : IN STD_LOGIC;
             addrb : IN STD_LOGIC_VECTOR(17 DOWNTO 0);
-            
+
             doutb : OUT STD_LOGIC_VECTOR(17 DOWNTO 0)
         );
     END component;
@@ -72,25 +72,32 @@ begin
     begin
 
         if (clk'event and clk = '1') then
-            if rst = '1' then --reset event
+            if rst = '1' then
+                --reset event
                 count_temp <= (others => '0');
                 bram_wet <= "00";
                 bram_enable <= '0';
-                
+
             elsif new_sample = '1' then -- Normalno delovanje
-                bram_enable <= '1'; -- bere iz brama
-                if enable = '1' then  -- ne piše v bram
+                -- bere iz brama
+                bram_enable <= '1';
+
+                if enable = '1' then
+                    -- ne piše v bram
                     bram_wet <= "00";
-                else -- piše v bram
+                else
+                    -- piše v bram
                     bram_wet <= "11";
                 end if;
+
                 -- tuki stejemo na katero mesto se pišemo in beremo v bramu
-                if count_temp = num_echo-1 then
+                if count_temp = num_echo - 1 then
                     count_temp <= (others => '0');
                 else
                     count_temp <= count_temp + 1;
                 end if;
-            else -- ne bere, ne piše iz brama
+            else
+                -- ne bere, ne piše iz brama
                 bram_enable <= '0';
                 bram_wet <= "00";
             end if;
@@ -112,9 +119,11 @@ begin
     process(clk)
     begin
         if (clk'event and clk = '1') then
-            if rst = '1' then -- reset event
+            if rst = '1' then
+                -- reset event
                 pcm_echo <= (others => '0');
-            elsif new_sample = '1' then -- Normalno delovanje
+            elsif new_sample = '1' then
+                -- Normalno delovanje
                 pcm_echo <= pcm_temp;
             end if;
         end if;

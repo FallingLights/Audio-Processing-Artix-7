@@ -18,7 +18,7 @@
 -- 0 -> ON = Reset?      8 ->
 -- 1 ->                  9 ->
 -- 2 ->                  10 ->  ON = ECHO | OFF = Inverse ECHO
--- 3 ->                  11 -> ON = ECHO_ADDITION | OFF = samo BRAM
+-- 3 ->                  11 -> ON = ECHO_ADDITION | OFF = samo BRAM (delay)
 -- 4 ->                  12 -> ON = Shranuje v BRAM
 -- 5 ->                  13 -> ON = MEDIAN FILTER | OFF = BOXCAR FILTER
 -- 6 ->                  14 -> ON = ECHO MODULE | OFF = BYPASS ECHO
@@ -170,7 +170,7 @@ begin
     echo_effect : entity work.echo
         generic map (
             width_top => width_top,
-            num_echo_top => 5)
+            num_echo_top => 150000)
         port map(
             clk => clk,
             rst => rst,
