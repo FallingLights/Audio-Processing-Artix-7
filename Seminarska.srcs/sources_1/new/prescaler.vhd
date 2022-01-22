@@ -36,8 +36,11 @@ entity prescaler is
         freq : integer := 2400);
     Port (
         clk : in std_logic;
+        rst : in std_logic;
+        
         clk_new : inout std_logic;
         clk_event : out std_logic;
+        
         clk_rising_edge : out std_logic);
 end prescaler;
 
@@ -49,22 +52,27 @@ begin
 
     process(clk)
     begin
-        if clk'event and clk = '1' then
-            if count = (((100*1000)/(freq*2))-1) then
+        if (rising_edge(clk)) then
+            if rst = '1' then -- reset event
+                clk_rising_edge <= '0';
                 count <= 0;
-                clk_new <= not clk_new;
-                clk_event <= '1';
-                if clk_new = '0' then
-                    clk_rising_edge <= '1';
+            else -- normalno delovanje
+                if count = (((100*1000)/(freq*2))-1) then
+                    count <= 0;
+                    clk_new <= not clk_new;
+                    clk_event <= '1';
+                    if clk_new = '0' then
+                        clk_rising_edge <= '1';
+                    else
+                        clk_rising_edge <= '0';
+                    end if;
                 else
+                    count <= count + 1;
+                    clk_event <= '0';
                     clk_rising_edge <= '0';
                 end if;
-            else
-                count <= count + 1;
-                clk_event <= '0';
-                clk_rising_edge <= '0';
             end if;
-        end if;
+        end if; -- rst = '1'
     end process;
 
 end Behavioral;

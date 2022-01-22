@@ -36,9 +36,13 @@ entity echo_process_data is
         num_echo: integer := 5);
     Port (
         clk : in std_logic;
+        rst : in std_logic;
+        
         new_sample : in std_logic;
-        enable : in std_logic_vector (14 downto 0);
+        SW : in std_logic_vector (15 downto 0);
         pcm_in : in std_logic_vector (width-1 downto 0);
+        
+        LED : out std_logic_vector (15 downto 0);
         pcm_echo : out std_logic_vector (width-1 downto 0));
 end echo_process_data;
 
@@ -53,6 +57,7 @@ architecture Behavioral of echo_process_data is
             clkb : IN STD_LOGIC;
             enb : IN STD_LOGIC;
             addrb : IN STD_LOGIC_VECTOR(17 DOWNTO 0);
+            
             doutb : OUT STD_LOGIC_VECTOR(17 DOWNTO 0)
         );
     END component;
@@ -67,17 +72,20 @@ begin
     process(clk)
     begin
 
-        if clk'event and clk = '1' then
-            if enable(14)= '1' then
+        if (rising_edge(clk)) then
+            if rst = '1' then --reset event
                 count_temp <= (others => '0');
                 bram_wet <= "00";
                 bram_enable <= '0';
-
-            elsif new_sample = '1' then
+                pcm_temp <= (others => '0');
+                
+            elsif new_sample = '1' then -- Normalno delovanje
                 bram_enable <= '1';
-                if enable(13) = '1' then
+                if SW(13) = '1' then
+                    LED(13) <= '1';
                     bram_wet <= "00";
                 else
+                    LED(13) <= '0';
                     bram_wet <= "11";
                 end if;
                 
@@ -107,15 +115,14 @@ begin
         );
     process(clk)
     begin
-        if clk'event and clk = '1' then
-            if enable(14) = '1' then
+        if (rising_edge(clk)) then
+            if rst = '1' then -- reset event
                 pcm_echo <= (others => '0');
-            elsif new_sample = '1' then
+            elsif new_sample = '1' then -- Normalno delovanje
                 pcm_echo <= pcm_temp;
             end if;
         end if;
     end process;
-
 
 
 end Behavioral;
