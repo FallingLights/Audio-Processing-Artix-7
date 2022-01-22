@@ -40,10 +40,10 @@ entity echo is
         rst : in std_logic;
         
         new_sample : in std_logic;
-        SW : in std_logic_vector (15 downto 0);
+        SW : in std_logic_vector (13 downto 0);
         pcm_in : in std_logic_vector (width_top-1 downto 0);
         
-        LED : out std_logic_vector (15 downto 0);
+        LED : out std_logic_vector (13 downto 0);
         pcm_out : out std_logic_vector (width_top-1 downto 0));
 end echo;
 
@@ -56,9 +56,22 @@ architecture Behavioral of echo is
     signal pcm_echo_addition : std_logic_vector (width_top-1 downto 0) := (others => '0');
     
     signal pcm_out_final : std_logic_vector (width_top-1 downto 0);
+    signal echo_process_data_enable : std_logic := '0';
 begin
-
-    -- dobim ven pcm_echo
+    
+    process (clk)
+    begin
+    if (rising_edge(clk)) then
+      if SW(13) = '1' then --Piše v BRAM
+        LED(13) <= '1';
+        echo_process_data_enable <= '0';
+      else -- ne piše v bram
+        LED(13) <= '0';
+        echo_process_data_enable <= '1';
+      end if;
+    end if;
+    end process;
+    
     get_pcm_of_echo : entity work.echo_process_data
         generic map(
             width => width_top,
@@ -67,10 +80,11 @@ begin
             clk => clk,
             rst => rst,
             new_sample => new_sample,
-            SW => SW(15 downto 0),
+            enable => echo_process_data_enable,
             pcm_in => pcm_in,
             
             pcm_echo => pcm_of_echo);
+    
     
     process (clk)
     begin

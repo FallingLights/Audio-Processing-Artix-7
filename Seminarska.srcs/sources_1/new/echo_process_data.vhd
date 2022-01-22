@@ -39,10 +39,9 @@ entity echo_process_data is
         rst : in std_logic;
         
         new_sample : in std_logic;
-        SW : in std_logic_vector (15 downto 0);
+        enable : in std_logic;
         pcm_in : in std_logic_vector (width-1 downto 0);
         
-        LED : out std_logic_vector (15 downto 0);
         pcm_echo : out std_logic_vector (width-1 downto 0));
 end echo_process_data;
 
@@ -79,21 +78,19 @@ begin
                 bram_enable <= '0';
                 
             elsif new_sample = '1' then -- Normalno delovanje
-                bram_enable <= '1';
-                if SW(13) = '1' then
-                    LED(13) <= '1';
+                bram_enable <= '1'; -- bere iz brama
+                if enable = '1' then  -- ne piše v bram
                     bram_wet <= "00";
-                else
-                    LED(13) <= '0';
+                else -- piše v bram
                     bram_wet <= "11";
                 end if;
-                
+                -- tuki stejemo na katero mesto se pišemo in beremo v bramu
                 if count_temp = num_echo-1 then
                     count_temp <= (others => '0');
                 else
                     count_temp <= count_temp + 1;
                 end if;
-            else
+            else -- ne bere, ne piše iz brama
                 bram_enable <= '0';
                 bram_wet <= "00";
             end if;
