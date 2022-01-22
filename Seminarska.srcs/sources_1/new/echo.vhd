@@ -64,21 +64,21 @@ begin
     begin
         if (clk'event and clk = '1') then
             if SW(12) = '1' then
-                --Piöe v BRAM
+                --Pi≈°e v BRAM
                 LED(12) <= '1';
                 echo_process_data_enable <= '1';
             else
-                -- ne piöe v bram
+                -- ne pi≈°e v bram
                 LED(12) <= '0';
                 echo_process_data_enable <= '0';
             end if;
             if SW(11) = '1' then
                 -- Echo
-                LED(12) <= '1';
+                LED(11) <= '1';
                 pcm_temp <= pcm_of_sum;
             else
                 -- Delay
-                LED(12) <= '0';
+                LED(11) <= '0';
                 pcm_temp <= pcm_in;
             end if;
         end if;
