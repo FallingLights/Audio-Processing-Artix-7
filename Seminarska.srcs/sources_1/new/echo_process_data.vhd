@@ -42,6 +42,7 @@ entity echo_process_data is
         SW : in std_logic_vector (15 downto 0);
         pcm_in : in std_logic_vector (width-1 downto 0);
         
+        LED : out std_logic_vector (15 downto 0);
         pcm_echo : out std_logic_vector (width-1 downto 0));
 end echo_process_data;
 
@@ -76,12 +77,15 @@ begin
                 count_temp <= (others => '0');
                 bram_wet <= "00";
                 bram_enable <= '0';
+                pcm_temp <= (others => '0');
                 
             elsif new_sample = '1' then -- Normalno delovanje
                 bram_enable <= '1';
                 if SW(13) = '1' then
+                    LED(13) <= '1';
                     bram_wet <= "00";
                 else
+                    LED(13) <= '0';
                     bram_wet <= "11";
                 end if;
                 

@@ -57,7 +57,7 @@ begin
     begin
         if (rising_edge(clk)) then
             if rst = '1' then -- reset event
-                pcm_out <= (others => '0');
+                --pcm_out <= (others => '0');
                 pcm_prev <= (others => '0');
                 buff <= (others => '0');
                 last <= (others => '0');

@@ -141,18 +141,21 @@ begin
             clk => clk,
             rst => rst,
             new_sample => event_12khz,
-            SW => SW(14 downto 0),
+            SW => SW(15 downto 0),
+            LED => LED,
             pcm_in => pcm_filtered,
             pcm_out => pcm_echoed);
     
     process(clk)
     begin
-        if SW(14) = '1' then
-            LED(14) <= '1';
-            pcm_in_pcm2pwm <= pcm_echoed;
-        else
-            LED(14) <= '0';
-            pcm_in_pcm2pwm <= pcm_filtered;
+        if rising_edge(clk) then
+            if SW(14) = '1' then
+                LED(14) <= '1';
+                pcm_in_pcm2pwm <= pcm_echoed;
+            else
+                LED(14) <= '0';
+                pcm_in_pcm2pwm <= pcm_filtered;
+            end if;
         end if;
     end process;
     
@@ -169,12 +172,14 @@ begin
     
     process(clk)
     begin
-        if SW(15) = '1' then
-            LED(15) <= '1';
-            aud_pwm <= pwm;
-        else
-            LED(15) <= '0';
-            aud_pwm <= m_data;
+        if rising_edge(clk) then
+            if SW(15) = '1' then
+                LED(15) <= '1';
+                aud_pwm <= pwm;
+            else
+                LED(15) <= '0';
+                aud_pwm <= m_data;
+            end if;
         end if;
     end process;
     

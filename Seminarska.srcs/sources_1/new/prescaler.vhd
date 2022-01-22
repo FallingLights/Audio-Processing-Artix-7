@@ -37,6 +37,7 @@ entity prescaler is
     Port (
         clk : in std_logic;
         rst : in std_logic;
+        
         clk_new : inout std_logic;
         clk_event : out std_logic;
         

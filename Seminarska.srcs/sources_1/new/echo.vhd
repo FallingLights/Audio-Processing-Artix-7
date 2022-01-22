@@ -38,10 +38,12 @@ entity echo is
     Port (
         clk : in std_logic;
         rst : in std_logic;
+        
         new_sample : in std_logic;
         SW : in std_logic_vector (15 downto 0);
-        LED : out std_logic_vector (15 downto 0);
         pcm_in : in std_logic_vector (width_top-1 downto 0);
+        
+        LED : out std_logic_vector (15 downto 0);
         pcm_out : out std_logic_vector (width_top-1 downto 0));
 end echo;
 
@@ -65,12 +67,12 @@ begin
             clk => clk,
             rst => rst,
             new_sample => new_sample,
-            SW => SW,
+            SW => SW(15 downto 0),
             pcm_in => pcm_in,
             
             pcm_echo => pcm_of_echo);
     
-    process (clk) -- on choisi le volumme automatique avec SW(15)
+    process (clk)
     begin
     if (rising_edge(clk)) then
       if SW(11) = '1' then --echo
@@ -93,7 +95,6 @@ begin
             rst => rst,
             
             new_sample => new_sample,
-            SW => SW,
             
             pcm_in => pcm_in_addition,
             pcm_echo => pcm_echo_addition,
