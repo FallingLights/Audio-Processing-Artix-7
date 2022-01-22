@@ -2,9 +2,9 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date: 07.01.2022 23:40:22
+-- Create Date: 19.01.2022 23:48:43
 -- Design Name: 
--- Module Name: addition_of_pcms - Behavioral
+-- Module Name: boxcar_filter - Behavioral
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
@@ -31,35 +31,36 @@ use IEEE.NUMERIC_STD.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity addition_of_pcms is
+entity boxcar_filter is
     Generic (
-        width : integer := 7);
+        width : integer := 7;
+        window : integer := 7);
     Port (
         clk : in std_logic;
-        rst : in std_logic;
-        
         new_sample : in std_logic;
         pcm_in : in std_logic_vector (width-1 downto 0);
-        pcm_echo : in std_logic_vector (width-1 downto 0);
-        
         pcm_out : out std_logic_vector (width-1 downto 0));
-end addition_of_pcms;
+end boxcar_filter;
 
-architecture Behavioral of addition_of_pcms is
+architecture Behavioral of boxcar_filter is
 
-    signal sum : unsigned (width-1 downto 0) := (others => '0');
+    signal pcm_prev : unsigned (width-1 downto 0) := (others => '0');
+    signal buff : std_logic_vector (window*width-1 downto 0) := (others => '0');
+    signal last : std_logic_vector (width-1 downto 0);
+    signal y : unsigned (width-1 downto 0);
 
 begin
 
     process(clk)
     begin
         if (rising_edge(clk)) then
-            if rst = '1' then --reset event
-                sum <= (others => '0');
-                pcm_out <= (others => '0');
-            elsif new_sample = '1' then -- Normalno delovanje 
-                sum <= unsigned(pcm_in) + (shift_right(unsigned(pcm_echo), 4));
-                pcm_out <= std_logic_vector(sum);
+            if new_sample = '1' then
+                last <= buff(window*width-1 downto window*width-width); -- x_n-N
+                y <= unsigned(pcm_in) + pcm_prev - unsigned(last);
+                pcm_prev <= y;
+                pcm_out <= std_logic_vector(y);
+                -- shiftamo za width v levo in desno zapisemo nov pcm_in
+                buff <= buff(window*width-1-width downto 0) & pcm_in;
             end if;
         end if;
     end process;

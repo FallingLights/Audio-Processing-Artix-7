@@ -15,7 +15,14 @@
 -- Revision:
 -- Revision 0.01 - File Created
 -- Additional Comments:
--- 
+-- 0 -> ON = Reset?      8 ->
+-- 1 ->                  9 ->
+-- 2 ->                  10 ->
+-- 3 ->                  11 -> ON = ECHO | OFF = Inverse ECHO
+-- 4 ->                  12 -> ON = ECHO_ADDITION | OFF = samo BRAM
+-- 5 ->                  13 -> ON = Shranuje v BRAM
+-- 6 ->                  14 -> ON = ECHO MODULE | OFF = BYPASS ECHO
+-- 7 ->                  15 -> ON = OBDELOVANJE SIGNALA | OFF = DIREKTNO IZ MIC
 ----------------------------------------------------------------------------------
 
 library IEEE;
@@ -38,96 +45,23 @@ entity top is
         limit_top : integer := 262143);
     Port ( 
         clk : in  std_logic;
+        CPU_RESETN : in std_logic;
+        
+        -- Microphone
         m_clk : out std_logic; -- ura za mikrofon
         m_data : in  std_logic; -- vhod iz mikrofona
-        SW : in std_logic_vector (15 downto 0); -- prvi switch za dolocanje ali je echo ali ne, tretji switch; ce je vklopljen prihaja zvok direkt iz mikrofona
+        
+        -- I/O
+        SW : in std_logic_vector (15 downto 0);
+        LED : out std_logic_vector (15 downto 0) := (others => '0');
+        
+        --Audio Out
         m_lrsel : out std_logic;
         aud_pwm : out std_logic; -- audio izhod
         aud_sd : out std_logic); -- omogoci audio izhod
 end top;
 
 architecture Behavioral of top is
-
-    -- delilnik ure
-    component prescaler is
-        generic(
-            freq : integer := 2400); -- kHz
-        port(
-            clk : in std_logic;
-            clk_new : inout std_logic;
-            clk_event : out std_logic;
-            clk_rising_edge : out std_logic);
-    end component;
-
-    component pdm2pcm is
-        generic(
-            width : integer := 7;
-            limit : integer := 128);
-        port(
-            clk : in std_logic;
-            clk_sample : in std_logic;
-            event_sample : in std_logic;
-            m_enable : in std_logic;
-            m_data : in std_logic;
-            pcm : out std_logic_vector (width-1 downto 0));
-    end component;
-    
-    component median_filter is
-        generic(
-            width : integer := 7;
-            window : integer := 7);
-        port(
-            clk : in std_logic;
-            new_sample : in std_logic;
-            pcm_in : in std_logic_vector (width-1 downto 0);
-            pcm_out : inout std_logic_vector (width-1 downto 0));
-    end component;
-    
-    component decimation is
-        generic(
-            width_pcm : integer := 7;
-            limit_dec : integer := 10);
-        port(
-            clk : in std_logic;
-            new_sample : in std_logic;
-            pcm_in : in std_logic_vector (width_pcm-1 downto 0);
-            pcm_out : out std_logic_vector (width_pcm-1 downto 0));
-    end component;
-
-    component echo is
-        generic(
-            width_top : integer := 7;
-            num_echo_top : integer := 5);
-        port(
-            clk : in std_logic;
-            new_sample : in std_logic;
-            enable : in std_logic_vector (14 downto 0);
-            pcm_in : in std_logic_vector (width_top-1 downto 0);
-            pcm_out : out std_logic_vector (width_top-1 downto 0));
-    end component;
-
-    component delay is
-        generic(
-            width : integer := 7;
-            limit : integer := 128;
-            num_delay : integer := 5);
-        port(
-            clk : in std_logic;
-            new_sample : in std_logic;
-            pcm_in : in std_logic_vector (width-1 downto 0);
-            pcm_delay : out std_logic_vector (width-1 downto 0));
-     end component;
-
-    component pcm2pwm is
-        generic(
-            width : integer := 7;
-            limit : integer := 128);
-        port(
-            clk : in std_logic;
-            new_sample : in std_logic;
-            pcm : in std_logic_vector (width-1 downto 0);
-            pwm : out std_logic);
-    end component;
 
     signal clk_2400khz : std_logic := '1';
     signal rising_edge_2400khz : std_logic;
@@ -140,88 +74,123 @@ architecture Behavioral of top is
     signal pcm_decimated : std_logic_vector (width_top-1 downto 0) := (others => '0');
     signal pcm_echoed : std_logic_vector (width_top-1 downto 0) := (others => '0');
     signal pwm : std_logic;
+    signal pcm_in_pcm2pwm : std_logic_vector (width_top-1 downto 0) := (others => '0');
+    
+    signal rst : std_logic;
 
 begin
-
-    microphone_clock : prescaler
+    --rst <= CPU_RESETN;
+    
+    process(clk)
+    begin
+        if rising_edge(clk) then
+          rst <= CPU_RESETN;
+        end if;
+    end process;
+    
+    microphone_clock : entity work.prescaler
         port map(
             clk => clk,
+            rst => rst,
             clk_new => clk_2400khz,
             clk_rising_edge => rising_edge_2400khz);
 
-    sampling_period : prescaler
+    sampling_period : entity work.prescaler
         generic map(
             freq => 12)
         port map(
             clk => clk,
+            rst => rst,
             clk_new => clk_12khz,
             clk_event => event_12khz);
 
-    pdm_to_pcm : pdm2pcm
+    pdm_to_pcm : entity work.pdm2pcm
         generic map(
             width => width_top,
             limit => limit_top)
         port map(
             clk => clk,
+            rst => rst,
             clk_sample => clk_12khz,
             event_sample => event_12khz,
             m_enable => rising_edge_2400khz,
             m_data => m_data,
             pcm => pcm);
 
-    filter : median_filter
+    filter : entity work.median_filter
         generic map(
             width => width_top,
             window => 3)
         port map(
             clk => clk,
+            rst => rst,
             new_sample => event_12khz,
             pcm_in => pcm,
             pcm_out => pcm_filtered);
             
-    decimation_of_pcm : decimation
+    decimation_of_pcm : entity work.decimation
         generic map (
             width_pcm => width_top,
             limit_dec => 3)
         port map(
             clk => clk,
+            rst => rst,
             new_sample => event_12khz,
             pcm_in => pcm_filtered,
             pcm_out => pcm_decimated);
 
 -- max num_echo_top => 150000
-    echo_effect : echo
+    echo_effect : entity work.echo
         generic map (
             width_top => width_top,
             num_echo_top => 5)
         port map(
             clk => clk,
+            rst => rst,
             new_sample => event_12khz,
-            enable => SW(14 downto 0),
+            SW => SW(15 downto 0),
+            LED => LED,
             pcm_in => pcm_filtered,
             pcm_out => pcm_echoed);
-
-    pcm_to_pwm : pcm2pwm
+    
+    process(clk)
+    begin
+        if rising_edge(clk) then
+            if SW(14) = '1' then
+                LED(14) <= '1';
+                pcm_in_pcm2pwm <= pcm_echoed;
+            else
+                LED(14) <= '0';
+                pcm_in_pcm2pwm <= pcm_filtered;
+            end if;
+        end if;
+    end process;
+    
+    pcm_to_pwm : entity work.pcm2pwm
         generic map(
             width => width_top,
             limit => limit_top)
         port map(
             clk => clk,
+            rst => rst,
             new_sample => event_12khz,
-            pcm => pcm_echoed, 
+            pcm => pcm_in_pcm2pwm, 
             pwm => pwm);
-
-    m_clk <= clk_2400khz;
-    m_lrsel <= '0'; -- bit iz mikrofona je na voljo ob pozitivni fronti ure
-    aud_sd <= '1';
     
     process(clk)
     begin
-        if SW(15) = '1' then
-            aud_pwm <= m_data;
-        else
-            aud_pwm <= pwm;
+        if rising_edge(clk) then
+            if SW(15) = '1' then
+                LED(15) <= '1';
+                aud_pwm <= pwm;
+            else
+                LED(15) <= '0';
+                aud_pwm <= m_data;
+            end if;
         end if;
     end process;
-
+    
+    m_clk <= clk_2400khz;
+    m_lrsel <= '0'; -- bit iz mikrofona je na voljo ob pozitivni fronti ure
+    aud_sd <= '1';
 end Behavioral;
