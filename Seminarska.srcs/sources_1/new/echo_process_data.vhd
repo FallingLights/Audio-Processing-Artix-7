@@ -77,14 +77,25 @@ begin
                 count_temp <= (others => '0');
                 bram_wet <= "00";
                 bram_enable <= '0';
+<<<<<<< HEAD
+=======
+                pcm_temp <= (others => '0');
+>>>>>>> 81eeb698589c35e8ccb776cf06506773f74b32ea
                 
             elsif new_sample = '1' then -- Normalno delovanje
                 bram_enable <= '1';
                 if SW(13) = '1' then
+<<<<<<< HEAD
                     --LED(13) <= '1';
                     bram_wet <= "00";
                 else
                     --LED(13) <= '0';
+=======
+                    LED(13) <= '1';
+                    bram_wet <= "00";
+                else
+                    LED(13) <= '0';
+>>>>>>> 81eeb698589c35e8ccb776cf06506773f74b32ea
                     bram_wet <= "11";
                 end if;
                 
