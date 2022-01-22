@@ -56,6 +56,8 @@ architecture Behavioral of echo is
 
     signal pcm_out_final : std_logic_vector (width_top-1 downto 0);
     signal echo_process_data_enable : std_logic := '0';
+    
+    signal pcm_temp : std_logic_vector (width_top-1 downto 0) := (others => '0');
 begin
 
     process (clk)
@@ -70,6 +72,15 @@ begin
                 LED(12) <= '0';
                 echo_process_data_enable <= '0';
             end if;
+            if SW(11) = '1' then
+                -- Echo
+                LED(12) <= '1';
+                pcm_temp <= pcm_of_sum;
+            else
+                -- Delay
+                LED(12) <= '0';
+                pcm_temp <= pcm_in;
+            end if;
         end if;
     end process;
 
@@ -82,8 +93,7 @@ begin
             rst => rst,
             new_sample => new_sample,
             enable => echo_process_data_enable,
-            pcm_in => pcm_in,
-
+            pcm_in => pcm_temp,
             pcm_echo => pcm_of_echo);
 
 

@@ -58,7 +58,7 @@ begin
                 pcm_out <= (others => '0');
             elsif new_sample = '1' then
                 -- Normalno delovanje 
-                pcm_out <= std_logic_vector(unsigned(pcm_in) + (shift_right(unsigned(pcm_echo), 4)));
+                pcm_out <= std_logic_vector(unsigned(pcm_in) + (shift_right(unsigned(pcm_echo), 1)));
             end if;
         end if;
     end process;
