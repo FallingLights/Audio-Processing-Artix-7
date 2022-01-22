@@ -72,7 +72,7 @@ architecture Behavioral of top is
             pcm : out std_logic_vector (width-1 downto 0));
     end component;
     
-    component boxcar_filter is
+    component median_filter is
         generic(
             width : integer := 7;
             window : integer := 7);
@@ -169,7 +169,7 @@ begin
             m_data => m_data,
             pcm => pcm);
 
-    filter : boxcar_filter
+    filter : median_filter
         generic map(
             width => width_top,
             window => 3)
@@ -182,7 +182,7 @@ begin
     decimation_of_pcm : decimation
         generic map (
             width_pcm => width_top,
-            limit_dec => 5)
+            limit_dec => 3)
         port map(
             clk => clk,
             new_sample => event_12khz,
@@ -193,12 +193,12 @@ begin
     echo_effect : echo
         generic map (
             width_top => width_top,
-            num_echo_top => 100000)
+            num_echo_top => 5)
         port map(
             clk => clk,
             new_sample => event_12khz,
             enable => SW(14 downto 0),
-            pcm_in => pcm_decimated,
+            pcm_in => pcm_filtered,
             pcm_out => pcm_echoed);
 
     pcm_to_pwm : pcm2pwm
@@ -208,7 +208,7 @@ begin
         port map(
             clk => clk,
             new_sample => event_12khz,
-            pcm => pcm_echoed,
+            pcm => pcm_echoed, 
             pwm => pwm);
 
     m_clk <= clk_2400khz;

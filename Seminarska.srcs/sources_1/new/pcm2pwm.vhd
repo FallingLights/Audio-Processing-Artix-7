@@ -51,7 +51,7 @@ begin
     process (clk)
     begin
         if clk'event and clk = '1' then
-                if unsigned(pcm) > count then
+                if (unsigned(pcm)) > count then
                     pwm <= '1';
                 else
                     pwm <= '0';

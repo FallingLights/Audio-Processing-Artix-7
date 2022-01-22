@@ -59,19 +59,6 @@ begin
     process (clk)
     begin
         if clk'event and clk = '1' then
-            if event_sample = '1' then
-                if clk_sample = '1' then
-                    pcm <= std_logic_vector(ones1);
-                    count1 <= '1';
-                    depth1 <= (others => '0');
-                    ones1 <= (others => '0');
-                elsif clk_sample = '0' then
-                    pcm <= std_logic_vector(ones2);
-                    count2 <= '1';
-                    depth2 <= (others => '0');
-                    ones2 <= (others => '0');
-                end if;
-            end if;
             if m_enable = '1' then
                 if count1 = '1' then
                     if depth1 < limit-1 then
@@ -88,6 +75,19 @@ begin
                             ones2 <= ones2 + 1;
                         end if;
                     end if;
+                end if;
+            end if;
+            if event_sample = '1' then
+                if clk_sample = '1' then
+                    pcm <= std_logic_vector(ones1);
+                    count1 <= '1';
+                    depth1 <= (others => '0');
+                    ones1 <= (others => '0');
+                elsif clk_sample = '0' then
+                    pcm <= std_logic_vector(ones2);
+                    count2 <= '1';
+                    depth2 <= (others => '0');
+                    ones2 <= (others => '0');
                 end if;
             end if;
         end if;

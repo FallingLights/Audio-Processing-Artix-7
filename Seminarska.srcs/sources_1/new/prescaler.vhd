@@ -54,7 +54,7 @@ begin
                 count <= 0;
                 clk_new <= not clk_new;
                 clk_event <= '1';
-                if clk_new = '1' then
+                if clk_new = '0' then
                     clk_rising_edge <= '1';
                 else
                     clk_rising_edge <= '0';
