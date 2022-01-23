@@ -38,12 +38,12 @@ entity pdm2pcm is
     Port (
         clk : in std_logic;
         rst : in std_logic;
-        
+
         clk_sample : in std_logic;
         event_sample : in std_logic;
         m_enable : in std_logic;
         m_data : in std_logic;
-        
+
         pcm : out std_logic_vector (width-1 downto 0));
 end pdm2pcm;
 
@@ -89,7 +89,7 @@ begin
                         end if;
                     end if;
                 end if; -- m_enable = '1'
-                
+
                 if event_sample = '1' then
                     if clk_sample = '1' then
                         pcm <= std_logic_vector(ones1);
@@ -103,7 +103,7 @@ begin
                         ones2 <= (others => '0');
                     end if;
                 end if; -- event_sample = '1'
-                
+
             end if; -- rst = '1'
         end if; -- (clk'event and clk = '1')
     end process;

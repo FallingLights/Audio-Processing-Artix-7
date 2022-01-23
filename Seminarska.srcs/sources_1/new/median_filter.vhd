@@ -38,10 +38,10 @@ entity median_filter is
     Port (
         clk : in std_logic;
         rst : in std_logic;
-        
+
         new_sample : in std_logic;
         pcm_in : in std_logic_vector (width-1 downto 0);
-        
+
         pcm_out : out std_logic_vector (width-1 downto 0));
 end median_filter;
 
@@ -68,7 +68,7 @@ begin
             end if;
         end if;
     end process;
-    
+
     pcm_out <= std_logic_vector(pcm_prev (width-1 downto 0));
 
 end Behavioral;

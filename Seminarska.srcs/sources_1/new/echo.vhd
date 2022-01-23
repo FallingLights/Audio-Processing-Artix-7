@@ -56,7 +56,7 @@ architecture Behavioral of echo is
 
     signal pcm_out_final : std_logic_vector (width_top-1 downto 0);
     signal echo_process_data_enable : std_logic := '0';
-    
+
     signal pcm_temp : std_logic_vector (width_top-1 downto 0) := (others => '0');
 begin
 
