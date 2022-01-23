@@ -38,10 +38,10 @@ entity pcm2pwm is
     Port (
         clk : in std_logic;
         rst : in std_logic;
-        
+
         new_sample : in std_logic;
         pcm : in std_logic_vector (width-1 downto 0);
-        
+
         pwm : out std_logic);
 end pcm2pwm;
 
@@ -54,21 +54,21 @@ begin
     process (clk)
     begin
         if (clk'event and clk = '1') then
-                if rst = '1' then -- reset event
+            if rst = '1' then -- reset event
+                pwm <= '0';
+                count <= (others => '0');
+            else -- normalno delovanje
+                if (unsigned(pcm)) > count then
+                    pwm <= '1';
+                else
                     pwm <= '0';
-                    count <= (others => '0');
-                else -- normalno delovanje
-                    if (unsigned(pcm)) > count then
-                        pwm <= '1';
-                    else
-                        pwm <= '0';
-                    end if;
-                    if count = limit-1 or new_sample = '1' then
-                        count <= (others => '0');
-                    else
-                        count <= count + 1;
-                    end if;
                 end if;
+                if count = limit-1 or new_sample = '1' then
+                    count <= (others => '0');
+                else
+                    count <= count + 1;
+                end if;
+            end if;
         end if;
     end process;
 
