@@ -64,11 +64,11 @@ begin
     begin
         if (clk'event and clk = '1') then
             if SW(12) = '1' then
-                --Piše v BRAM
+                --Pise v BRAM
                 LED(12) <= '1';
                 echo_process_data_enable <= '1';
             else
-                -- ne piše v bram
+                -- ne pise v bram
                 LED(12) <= '0';
                 echo_process_data_enable <= '0';
             end if;
