@@ -46,7 +46,7 @@ architecture Behavioral of prescaler_tb is
     signal event_12khz : std_logic; -- := '0';
 begin
     
-    microphone_clock : entity work.prescaler
+    microphone_clock : entity work.prescaler_for_tb
         generic map(
             freq => 2400)
         port map(
@@ -55,7 +55,7 @@ begin
             clk_new => clk_2400khz,
             clk_rising_edge => rising_edge_2400khz);
 
-    sampling_period : entity work.prescaler
+    sampling_period : entity work.prescaler_for_tb
         generic map(
             freq => 12)
         port map(

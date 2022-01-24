@@ -73,28 +73,28 @@ end top;
 
 architecture Behavioral of top is
 
---    component debouncer is
---        Port ( clk : in std_logic;
---               BTNU : in std_logic;
---               BTNL : in std_logic;
---               BTNR : in std_logic;
---               BTND : in std_logic;
---               BTNU_db : out std_logic;
---               BTNL_db : out std_logic;
---               BTNR_db : out std_logic;
---               BTND_db : out std_logic);
---    end component;
+    component debouncer is
+        Port ( clk : in std_logic;
+               BTNU : in std_logic;
+               BTNL : in std_logic;
+               BTNR : in std_logic;
+               BTND : in std_logic;
+               BTNU_db : out std_logic;
+               BTNL_db : out std_logic;
+               BTNR_db : out std_logic;
+               BTND_db : out std_logic);
+    end component;
 
---    component display is
---        Port ( clk : in std_logic;
---               delay : in unsigned (4 downto 0);
---               vol : in unsigned (2 downto 0);
---               an : out std_logic_vector (7 downto 0);
---               cath : out std_logic_vector (7 downto 0));
---    end component;
+    component display is
+        Port ( clk : in std_logic;
+               delay : in unsigned (4 downto 0);
+               vol : in unsigned (2 downto 0);
+               an : out std_logic_vector (7 downto 0);
+               cath : out std_logic_vector (7 downto 0));
+    end component;
 
     signal clk_2400khz : std_logic := '1';
-    signal event_2400khz : std_logic;
+    signal rising_edge_2400khz : std_logic;
 
     signal clk_12khz : std_logic := '0';
     signal event_12khz : std_logic;
@@ -124,7 +124,7 @@ architecture Behavioral of top is
 
 begin
 
-    button_debouncing : entity work.debouncer
+    button_debouncing : debouncer
         port map (
             clk => clk,
             BTNU => BTNU,
@@ -154,7 +154,7 @@ begin
             clk => clk,
             rst => rst,
             clk_new => clk_2400khz,
-            clk_rising_edge => event_2400khz);
+            clk_rising_edge => rising_edge_2400khz);
 
     sampling_period : entity work.prescaler
         generic map(
@@ -174,7 +174,7 @@ begin
             rst => rst,
             clk_sample => clk_12khz,
             event_sample => event_12khz,
-            m_enable => event_2400khz,
+            m_enable => rising_edge_2400khz,
             m_data => m_data,
             pcm => pcm);
 
@@ -272,7 +272,7 @@ begin
             pcm => std_logic_vector(pcm_vol),
             pwm => pwm);
     
-    volume_and_delay_display : entity work.display
+    volume_and_delay_display : display
         port map(
             clk => clk,
             delay => delay_val,
