@@ -33,15 +33,14 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity echo is
     Generic (
-        width_top : integer := 7;
-        num_echo_top : integer := 5);
+        width_top : integer := 7);
     Port (
         clk : in std_logic;
         rst : in std_logic;
+        num_echo_top : in std_logic_vector (17 downto 0);
         new_sample : in std_logic;
         SW : in std_logic_vector (12 downto 1);
         LED : out std_logic_vector (12 downto 1);
-
         pcm_in : in std_logic_vector (width_top-1 downto 0);
         pcm_out : out std_logic_vector (width_top-1 downto 0));
 end echo;
@@ -86,11 +85,11 @@ begin
 
     get_pcm_of_echo : entity work.echo_process_data
         generic map(
-            width => width_top,
-            num_echo => num_echo_top)
+            width => width_top)
         port map(
             clk => clk,
             rst => rst,
+            num_echo => num_echo_top,
             new_sample => new_sample,
             enable => echo_process_data_enable,
             pcm_in => pcm_temp,

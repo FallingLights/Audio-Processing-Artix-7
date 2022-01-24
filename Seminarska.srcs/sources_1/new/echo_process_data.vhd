@@ -32,16 +32,14 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity echo_process_data is
     Generic (
-        width : integer := 7;
-        num_echo: integer := 5);
+        width : integer := 7);
     Port (
         clk : in std_logic;
         rst : in std_logic;
-
+        num_echo : in std_logic_vector (17 downto 0);
         new_sample : in std_logic;
         enable : in std_logic;
         pcm_in : in std_logic_vector (width-1 downto 0);
-
         pcm_echo : out std_logic_vector (width-1 downto 0));
 end echo_process_data;
 
@@ -62,16 +60,25 @@ architecture Behavioral of echo_process_data is
     END component;
 
     signal pcm_temp : std_logic_vector (width-1 downto 0) := (others => '0');
-    signal count_temp : unsigned  (17 downto 0) := (others => '0');
+    signal count_temp : unsigned (17 downto 0) := (others => '0');
 
     signal bram_enable : std_logic := '0';
     signal bram_wet : std_logic_vector(1 downto 0) := (others => '0');
+
+    signal num_echo_prev : std_logic_vector (17 downto 0) := (others => '0');
+    signal delay_change : std_logic := '0';
 
 begin
     process(clk)
     begin
 
         if (clk'event and clk = '1') then
+            if num_echo_prev /= num_echo then
+                delay_change <= '1';
+                num_echo_prev <= num_echo;
+                count_temp <= (others => '0');
+            end if;
+            
             if rst = '1' then
                 --reset event
                 count_temp <= (others => '0');
@@ -91,8 +98,9 @@ begin
                 end if;
 
                 -- tuki stejemo na katero mesto se pišemo in beremo v bramu
-                if count_temp = num_echo - 1 then
+                if count_temp = unsigned(num_echo) - 1 then
                     count_temp <= (others => '0');
+                    delay_change <= '0';
                 else
                     count_temp <= count_temp + 1;
                 end if;
@@ -124,7 +132,14 @@ begin
                 pcm_echo <= (others => '0');
             elsif new_sample = '1' then
                 -- Normalno delovanje
-                pcm_echo <= pcm_temp;
+                -- ob spremembi delaya za num_echo-krat vraèamo pcm_in 0, 
+                -- saj èakamo da se BRAM napolni z novimi vrednostmi, 
+                -- da ne predvajamo prejšnjih shranjenih odmevov
+                if delay_change = '1' then
+                    pcm_echo <= pcm_in;
+                else
+                    pcm_echo <= pcm_temp;
+                end if;
             end if;
         end if;
     end process;

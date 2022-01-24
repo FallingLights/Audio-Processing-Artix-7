@@ -23,16 +23,18 @@
 -- 5 ->                  13 -> ON = ECHO MODULE | OFF = BYPASS ECHO
 -- 6 ->                  14 -> 
 -- 7 ->                  15 -> ON = OBDELOVANJE SIGNALA | OFF = DIREKTNO IZ MIC
+-- BTNU -> volume up     BTND -> volume down (0->5, default je 3)
+-- BTNR -> +6250 delay   BTNL -> -6250 delay (1-24, default je 1: 6250=0.25s)
 ----------------------------------------------------------------------------------
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
--- use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
--- use IEEE.NUMERIC_STD.ALL;
+use IEEE.NUMERIC_STD.ALL;
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx leaf cells in this code.
@@ -54,6 +56,12 @@ entity top is
         -- I/O
         SW : in std_logic_vector (15 downto 0);
         LED : out std_logic_vector (15 downto 0);
+        cath : out std_logic_vector (7 downto 0);
+        an : out std_logic_vector (7 downto 0);
+        BTNU : in std_logic;
+        BTNL : in std_logic;
+        BTNR : in std_logic;
+        BTND : in std_logic;
 
         --Audio Out
         m_lrsel : out std_logic;
@@ -62,6 +70,26 @@ entity top is
 end top;
 
 architecture Behavioral of top is
+
+    component debouncer is
+        Port ( clk : in std_logic;
+               BTNU : in std_logic;
+               BTNL : in std_logic;
+               BTNR : in std_logic;
+               BTND : in std_logic;
+               BTNU_db : out std_logic;
+               BTNL_db : out std_logic;
+               BTNR_db : out std_logic;
+               BTND_db : out std_logic);
+    end component;
+
+    component display is
+        Port ( clk : in std_logic;
+               delay : in unsigned (4 downto 0);
+               vol : in unsigned (2 downto 0);
+               an : out std_logic_vector (7 downto 0);
+               cath : out std_logic_vector (7 downto 0));
+    end component;
 
     signal clk_2400khz : std_logic := '1';
     signal rising_edge_2400khz : std_logic;
@@ -74,11 +102,40 @@ architecture Behavioral of top is
     signal pcm_echoed : std_logic_vector (width_top-1 downto 0) := (others => '0');
     signal pwm : std_logic;
     signal pcm_in_pcm2pwm : std_logic_vector (width_top-1 downto 0) := (others => '0');
+    signal pcm_vol : unsigned (width_top-1 downto 0) := (others => '0');
     signal rst : std_logic := '0';
     signal audioOut : std_logic := '0';
+    
+    signal BTNU_db : std_logic := '0';
+    signal BTNL_db : std_logic := '0';
+    signal BTNR_db : std_logic := '0';
+    signal BTND_db : std_logic := '0';
+    
+    signal BTNU_prev : std_logic := '0';
+    signal BTNL_prev : std_logic := '0';
+    signal BTNR_prev : std_logic := '0';
+    signal BTND_prev : std_logic := '0';
+    signal vol : integer range -3 to 2 := 0;
+    signal vol_val : unsigned (2 downto 0) := "011";
+    signal delay : std_logic_vector (17 downto 0) := "000001100001101010";
+    signal delay_val : unsigned (4 downto 0) := "00001";
 
 begin
+
+    button_debouncing : debouncer
+        port map (
+            clk => clk,
+            BTNU => BTNU,
+            BTNL => BTNL,
+            BTNR => BTNR,
+            BTND => BTND,
+            BTNU_db => BTNU_db,
+            BTNL_db => BTNL_db,
+            BTNR_db => BTNR_db,
+            BTND_db => BTND_db);
+
     rst <= SW(0);
+    
     process(clk)
     begin
         if clk'event and clk = '1' then
@@ -89,6 +146,7 @@ begin
             end if;
         end if;
     end process;
+    
     microphone_clock : entity work.prescaler
         port map(
             clk => clk,
@@ -129,14 +187,33 @@ begin
             pcm_in => pcm,
             pcm_out => pcm_filtered);
 
+    delay_control : process(clk)
+    begin
+        if clk'event and clk = '1' then
+            if BTNR_db = '1' and BTNR_prev = '0' then
+                if delay < 150000 then
+                    delay <= delay + 6250;
+                    delay_val <= delay_val + 1;
+                end if;
+            elsif BTNL_db = '1' and BTNL_prev = '0' then
+                if delay > 6250 then
+                    delay <= delay - 6250;
+                    delay_val <= delay_val - 1;
+                end if;
+            end if;
+            BTNR_prev <= BTNR_db;
+            BTNL_prev <= BTNL_db;
+        end if;
+    end process;
+
     -- max num_echo_top => 150000
     echo_effect : entity work.echo
         generic map (
-            width_top => width_top,
-            num_echo_top => 12500) -- 25000 bi bilo 1s delay
+            width_top => width_top)
         port map(
             clk => clk,
             rst => rst,
+            num_echo_top => delay,
             new_sample => event_12khz,
             SW => SW(12 downto 1),
             LED => LED(12 downto 1),
@@ -155,6 +232,32 @@ begin
             end if;
         end if;
     end process;
+    
+    volume_control : process(clk)
+    begin
+        if clk'event and clk = '1' then
+            if BTNU_db = '1' and BTNU_prev = '0' then
+                if vol < 2 then
+                    vol <= vol + 1;
+                    vol_val <= vol_val + 1;
+                end if;
+            elsif BTND_db = '1' and BTND_prev = '0' then
+                if vol > -3 then
+                    vol <= vol - 1;
+                    vol_val <= vol_val - 1;
+                end if;
+            end if;
+            BTNU_prev <= BTNU_db;
+            BTND_prev <= BTND_db;
+            if vol < 0 then
+                pcm_vol <= shift_right(unsigned(pcm_in_pcm2pwm), -vol);
+            elsif vol > 0 then
+                pcm_vol <= shift_left(unsigned(pcm_in_pcm2pwm), vol);
+            else
+                pcm_vol <= unsigned(pcm_in_pcm2pwm);
+            end if;
+        end if;
+    end process;
 
     pcm_to_pwm : entity work.pcm2pwm
         generic map(
@@ -164,8 +267,16 @@ begin
             clk => clk,
             rst => rst,
             new_sample => event_12khz,
-            pcm => pcm_in_pcm2pwm,
+            pcm => std_logic_vector(pcm_vol),
             pwm => pwm);
+    
+    volume_and_delay_display : display
+        port map(
+            clk => clk,
+            delay => delay_val,
+            vol => vol_val,
+            cath => cath,
+            an => an (7 downto 0));
 
     process(clk)
     begin
