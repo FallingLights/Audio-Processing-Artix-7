@@ -39,7 +39,7 @@ end anode_switcher;
 
 architecture Behavioral of anode_switcher is
 
-signal count : integer range 0 to 7 := 0;
+signal count : integer range 0 to 8 := 0;
 
 begin
 
@@ -61,12 +61,12 @@ begin
     process(clk)
     begin
         if clk'event and clk = '1' then
-	       if count = 7 then
-               count <= 0;
+	       if count = 8 then
+                   count <= 0;
 	       elsif enable = '1' then
-               count <= count + 1;
-		   end if ;
-	    end if ;
+                   count <= count + 1;
+	       end if ;
+	end if ;
     end process;
 
 end Behavioral;
