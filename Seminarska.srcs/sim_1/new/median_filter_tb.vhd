@@ -2,9 +2,9 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date: 23.01.2022 20:22:50
+-- Create Date: 24.01.2022 14:33:41
 -- Design Name: 
--- Module Name: pdm2pcm_tb - Behavioral
+-- Module Name: median_filter_tb - Behavioral
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
@@ -21,21 +21,15 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
 use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
 use ieee.math_real.all;
 
-entity pdm2pcm_tb is
---  Port ( );
-end pdm2pcm_tb;
 
-architecture Behavioral of pdm2pcm_tb is
+entity median_filter_tb is
+--  Port ( );
+end median_filter_tb;
+
+architecture Behavioral of median_filter_tb is
     signal clk : std_logic := '0';
     signal rst : std_logic := '0';
     
@@ -47,6 +41,7 @@ architecture Behavioral of pdm2pcm_tb is
     
     signal pdm : std_logic := '0';
     signal pcm : std_logic_vector (17 downto 0) := (others => '0');
+    signal pcm_filtered : std_logic_vector (17 downto 0) := (others => '0');
     
     signal data_pdm_temp : integer;
 begin
@@ -80,6 +75,17 @@ begin
             m_enable => rising_edge_2400khz,
             m_data => pdm,
             pcm => pcm);
+            
+    filter : entity work.median_filter
+        generic map(
+            width => 18,
+            window => 3)
+        port map(
+            clk => clk,
+            rst => rst,
+            new_sample => event_12khz,
+            pcm_in => pcm,
+            pcm_out => pcm_filtered);
             
     -- microphone
     process

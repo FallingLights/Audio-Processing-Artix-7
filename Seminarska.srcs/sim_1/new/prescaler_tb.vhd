@@ -39,11 +39,11 @@ architecture Behavioral of prescaler_tb is
     signal clk : std_logic := '0';
     signal rst : std_logic := '0';
     
-    signal clk_2400khz : std_logic := '1';
-    signal enable_2400khz : std_logic := '1';
+    signal clk_2400khz : std_logic; -- := '1';
+    signal rising_edge_2400khz : std_logic; -- := '1';
     
-    signal clk_12khz : std_logic := '0';
-    signal enable_12khz : std_logic := '0';
+    signal clk_12khz : std_logic; -- := '0';
+    signal event_12khz : std_logic; -- := '0';
 begin
     
     microphone_clock : entity work.prescaler
@@ -53,7 +53,7 @@ begin
             clk => clk,
             rst => rst,
             clk_new => clk_2400khz,
-            clk_rising_edge => enable_2400khz);
+            clk_rising_edge => rising_edge_2400khz);
 
     sampling_period : entity work.prescaler
         generic map(
@@ -62,7 +62,7 @@ begin
             clk => clk,
             rst => rst,
             clk_new => clk_12khz,
-            clk_event => enable_12khz);
+            clk_event => event_12khz);
     
     process
     begin
