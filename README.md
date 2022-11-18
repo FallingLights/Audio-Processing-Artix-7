@@ -54,7 +54,7 @@
 ## About The Project
 
 <div align="center">
-    <img src="Audio_processor.jpg" alt="Overview">
+    <img src="images/Audio_processor.jpg" alt="Overview">
 </div>
 
 This project was created to demonstrate the capabilities of the Artix-7 FPGA at course Digital Design at University of Ljubljana FRI. The project uses the Digilent Nexys 4 DDR board, which has a Xilinx Artix-7 FPGA. The project uses the onboard audio codec to process audio in real time. The project currently supports echo, reverb, and delay effects. The project is written in VHDL and uses the Xilinx Vivado IDE.
@@ -156,7 +156,3 @@ Project Link: [https://github.com/FallingLights/Audio-Processing-Artix-7](https:
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/aleksander-gomilšek
 [product-screenshot]: images/screenshot.png
-
-# Obdelava zvoka v realnem času
-![Diagram](https://github.com/avidm/obdelava-zvoka/blob/main/Audio%20processor.jpg?raw=true)
-![alt text](https://cdn.discordapp.com/attachments/921107370640289822/923511713494630450/Slika1.png)
